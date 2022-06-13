@@ -38,6 +38,7 @@ func main() {
 	r := gin.Default()
 	v1 := r.Group("/api/v1")
 	{
+		v1.POST("/message", postMessage)
 		v1.POST("/callback", callback)
 	}
 	r.RedirectFixedPath = true
@@ -54,6 +55,14 @@ func readToken() (string, string) {
 	_ = viper.ReadInConfig()
 	viper.SafeWriteConfig()
 	return viper.GetString("secret"), viper.GetString("token")
+}
+
+func postMessage(c *gin.Context) {
+	userId := c.PostForm("userId")
+	message := c.PostForm("message")
+
+	response, err := bot.PushMessage(userId, linebot.NewTextMessage(message)).Do()
+	wrapResponse(c, response.RequestID, err)
 }
 
 func callback(c *gin.Context) {
