@@ -38,6 +38,7 @@ func main() {
 	r := gin.Default()
 	v1 := r.Group("/api/v1")
 	{
+		v1.GET("/message/*userId", getMessage)
 		v1.POST("/message", postMessage)
 		v1.POST("/callback", callback)
 	}
@@ -55,6 +56,26 @@ func readToken() (string, string) {
 	_ = viper.ReadInConfig()
 	viper.SafeWriteConfig()
 	return viper.GetString("secret"), viper.GetString("token")
+}
+
+func getMessage(c *gin.Context) {
+	userId := c.Param("userId")[1:]
+	userInfo, err := bot.GetProfile(userId).Do()
+	if err != nil {
+		wrapResponse(c, "", err)
+	}
+	data := db.Get(userId)
+
+	var r = struct {
+		UserId      string `json:"userId"`
+		DisplayName string `json:"displayName"`
+		Message     any    `json:"message"`
+	}{
+		UserId:      userId,
+		DisplayName: userInfo.DisplayName, // 預設狀態為ok
+		Message:     data,
+	}
+	wrapResponse(c, r, nil)
 }
 
 func postMessage(c *gin.Context) {
