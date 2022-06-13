@@ -1,6 +1,15 @@
 version: "3.9"  # optional since v1.27.0
 
 services:
+  linebot:
+    build: ./LineBot
+    container_name: 'linebot'
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_CONNSTRING=mongodb://mongodb:27017
   mongodb:
     image: mongo:4.4.14
     container_name: 'mongodb'
